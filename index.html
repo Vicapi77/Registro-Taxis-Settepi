@@ -1,0 +1,702 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SETTEPI · Registro de Taxis</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --verde-lipu:#1F6FD0;      /* azul Settepi (nombre conservado por compatibilidad) */
+    --verde-oscuro:#123E7C;
+    --verde-claro:#E9F1FC;
+    --naranja:#F2A03D;
+    --texto:#1B2330;
+    --gris:#6B7686;
+    --borde:#D9E4F2;
+    --rojo:#D0483F;
+    --sombra:0 6px 20px rgba(18,62,124,.10);
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    font-family:'Inter',Arial,sans-serif;
+    background:linear-gradient(180deg,#F5F8FD 0%,#EDF3FB 100%);
+    color:var(--texto);
+    min-height:100vh;
+  }
+  .wrap{max-width:720px;margin:0 auto;padding:24px 18px 60px;}
+
+  /* Encabezado */
+  .brand{
+    display:flex;align-items:center;justify-content:space-between;
+    margin-bottom:18px;
+  }
+  .brand-id{display:flex;flex-direction:column;}
+  .brand-id .co{font-size:11px;letter-spacing:.14em;color:var(--gris);text-transform:uppercase;font-weight:600;}
+  .brand-id h1{margin:2px 0 0;font-size:22px;font-weight:800;color:var(--verde-oscuro);letter-spacing:-.01em;}
+  .brand-mark{
+    width:44px;height:44px;border-radius:12px;
+    background:linear-gradient(135deg,var(--verde-lipu),var(--verde-oscuro));
+    display:flex;align-items:center;justify-content:center;
+    color:#fff;font-weight:800;font-size:17px;flex-shrink:0;
+    box-shadow:var(--sombra);
+  }
+
+  /* Tabs */
+  .tabs{display:flex;gap:8px;margin-bottom:20px;background:#fff;padding:6px;border-radius:14px;box-shadow:var(--sombra);}
+  .tab-btn{
+    flex:1;padding:12px 10px;border:none;border-radius:10px;background:transparent;
+    font-family:inherit;font-size:14px;font-weight:700;color:var(--gris);cursor:pointer;
+    transition:.15s;letter-spacing:.01em;
+  }
+  .tab-btn.active{background:var(--verde-lipu);color:#fff;box-shadow:0 3px 10px rgba(31,111,208,.35);}
+  .tab-btn:not(.active):hover{background:var(--verde-claro);}
+
+  .card{background:#fff;border-radius:16px;box-shadow:var(--sombra);padding:24px 22px;margin-bottom:16px;}
+
+  /* Formulario */
+  .field{margin-bottom:16px;}
+  .field label{display:block;font-size:13px;font-weight:700;color:var(--verde-oscuro);margin-bottom:6px;}
+  .field label .req{color:var(--rojo);margin-left:2px;}
+  .field input,.field select,.field textarea{
+    width:100%;padding:11px 12px;border:1.5px solid var(--borde);border-radius:10px;
+    font-family:inherit;font-size:14px;color:var(--texto);background:#FCFDFF;
+    transition:.15s;
+  }
+  .field input:focus,.field select:focus,.field textarea:focus{
+    outline:none;border-color:var(--verde-lipu);background:#fff;
+    box-shadow:0 0 0 3px rgba(31,111,208,.12);
+  }
+  .field textarea{resize:vertical;min-height:70px;}
+  .row2{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+  @media(max-width:560px){.row2{grid-template-columns:1fr;}}
+
+  .btn{
+    display:inline-flex;align-items:center;justify-content:center;gap:8px;
+    padding:13px 20px;border:none;border-radius:11px;font-family:inherit;
+    font-size:14.5px;font-weight:700;cursor:pointer;transition:.15s;width:100%;
+  }
+  .btn-primary{background:var(--verde-lipu);color:#fff;box-shadow:0 4px 14px rgba(31,111,208,.32);}
+  .btn-primary:hover{background:var(--verde-oscuro);}
+  .btn-primary:disabled{opacity:.55;cursor:not-allowed;}
+  .btn-ghost{background:var(--verde-claro);color:var(--verde-oscuro);}
+  .btn-ghost:hover{background:#DBE8F9;}
+  .btn-row{display:flex;gap:10px;margin-top:6px;}
+
+  .msg{padding:11px 14px;border-radius:10px;font-size:13.5px;font-weight:600;margin-bottom:16px;}
+  .msg-ok{background:#E6EFFB;color:var(--verde-oscuro);}
+  .msg-err{background:#FCEBEA;color:var(--rojo);}
+
+  /* Password gate */
+  .gate{text-align:center;padding:20px 4px;}
+  .gate p{color:var(--gris);font-size:13.5px;margin-bottom:18px;}
+  .gate input{max-width:220px;margin:0 auto 14px;text-align:center;letter-spacing:.08em;}
+
+  /* Lista de registros (editar) */
+  .search-box{margin-bottom:14px;}
+  .rec{
+    border:1.5px solid var(--borde);border-radius:12px;padding:13px 14px;margin-bottom:10px;
+    display:flex;justify-content:space-between;align-items:center;gap:12px;
+  }
+  .rec-info{font-size:13px;line-height:1.55;}
+  .rec-info b{color:var(--verde-oscuro);font-size:13.5px;}
+  .rec-info .sub{color:var(--gris);}
+  .rec .btn{width:auto;padding:9px 16px;font-size:13px;flex-shrink:0;}
+  .empty{text-align:center;color:var(--gris);font-size:13.5px;padding:26px 0;}
+  .loading{text-align:center;color:var(--gris);font-size:13.5px;padding:26px 0;}
+
+  .config-warning{
+    background:#FFF4E5;border:1.5px solid #F3C98A;color:#8A5A15;
+    padding:12px 14px;border-radius:10px;font-size:12.5px;margin-bottom:16px;line-height:1.5;
+  }
+  .top-link{background:none;border:none;color:var(--gris);font-size:12.5px;font-weight:600;cursor:pointer;padding:0 0 14px;text-decoration:underline;}
+
+  /* Folio / número de reporte */
+  .folio-box{
+    display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;
+    background:var(--verde-claro);border:1.5px dashed var(--verde-lipu);
+    border-radius:12px;padding:12px 14px;margin-bottom:16px;
+  }
+  .folio-box .lbl{font-size:11px;letter-spacing:.14em;text-transform:uppercase;font-weight:700;color:var(--gris);}
+  .folio-box .val{font-size:20px;font-weight:800;color:var(--verde-oscuro);letter-spacing:.02em;font-variant-numeric:tabular-nums;}
+  .folio-box button{
+    background:#fff;border:1.5px solid var(--verde-lipu);color:var(--verde-oscuro);
+    border-radius:9px;padding:8px 14px;font-family:inherit;font-size:12.5px;font-weight:700;cursor:pointer;
+  }
+  .folio-box button:hover{background:#fff;border-color:var(--verde-oscuro);}
+  .rec-info .folio{display:inline-block;background:var(--verde-claro);color:var(--verde-oscuro);
+    font-weight:800;font-size:11.5px;border-radius:6px;padding:2px 7px;margin-right:6px;letter-spacing:.02em;}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="brand">
+    <div class="brand-id">
+      <span class="co">SETTEPI</span>
+      <h1>Registro de Taxis</h1>
+    </div>
+    <div class="brand-mark">S</div>
+  </div>
+
+  <div id="configWarning" class="config-warning" style="display:none;">
+    ⚠️ Falta configurar <code>CONFIG.API_URL</code> en este archivo con la URL de tu Web App de Apps Script (busca <code>/* PEGA_AQUI */</code>).
+  </div>
+
+  <div class="tabs">
+    <button class="tab-btn active" id="tabContestar" onclick="cambiarTab('contestar')">Contestar</button>
+    <button class="tab-btn" id="tabEditar" onclick="cambiarTab('editar')">Editar</button>
+  </div>
+
+  <!-- ===== VISTA: CONTESTAR / FORMULARIO ===== -->
+  <div class="card" id="vistaFormulario" style="display:none;">
+    <div id="formTitleRow" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+      <strong id="formTitle" style="color:var(--verde-oscuro);font-size:15px;">Nueva solicitud</strong>
+    </div>
+    <button class="top-link" id="btnVolverLista" style="display:none;" onclick="volverALista()">← Volver a la lista</button>
+
+    <div id="msgArea"></div>
+
+    <div class="folio-box" id="folioBox">
+      <div>
+        <div class="lbl">No. de reporte</div>
+        <div class="val" id="folioTexto">—</div>
+      </div>
+      <button type="button" id="btnCopiarFolio" onclick="copiarFolio()">Copiar</button>
+    </div>
+
+    <form id="taxiForm" onsubmit="return false;">
+      <div class="field">
+        <label>PLANTA <span class="req">*</span></label>
+        <select id="f_planta" required>
+          <option value="">Selecciona…</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label>Tipo de solicitud <span class="req">*</span></label>
+        <select id="f_tipo" required>
+          <option value="">Selecciona…</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label>Motivo de solicitud <span class="req">*</span></label>
+        <textarea id="f_motivo" required></textarea>
+      </div>
+
+      <div class="row2">
+        <div class="field">
+          <label>Cantidad de taxis locales</label>
+          <input type="number" min="0" id="f_locales">
+        </div>
+        <div class="field">
+          <label>Cantidad de taxis foráneos</label>
+          <input type="number" min="0" id="f_foraneos">
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Ruta <span class="req">*</span></label>
+        <input type="text" id="f_ruta" required>
+      </div>
+
+      <div class="row2">
+        <div class="field">
+          <label>Hora de Inicio <span class="req">*</span></label>
+          <input type="time" id="f_horaInicio" required>
+        </div>
+        <div class="field">
+          <label>Hora de Llegada <span class="req">*</span></label>
+          <input type="time" id="f_horaLlegada" required>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Fecha de solicitud <span class="req">*</span></label>
+        <input type="date" id="f_fecha" required>
+      </div>
+
+      <div class="field">
+        <label>Usuarios</label>
+        <input type="text" id="f_usuarios">
+      </div>
+
+      <div class="field">
+        <label>Operador <span class="req">*</span></label>
+        <input type="text" id="f_operador" required>
+      </div>
+
+      <div class="field">
+        <label>Inplant que solicita <span class="req">*</span></label>
+        <input type="text" id="f_inplant" placeholder="Nombre de quien solicita" required>
+      </div>
+
+      <div class="btn-row">
+        <button type="button" class="btn btn-primary" id="btnEnviar" onclick="enviarFormulario()">Enviar respuesta</button>
+      </div>
+    </form>
+  </div>
+
+  <!-- ===== VISTA: EDITAR - CANDADO ===== -->
+  <div class="card" id="vistaGate">
+    <div class="gate">
+      <strong style="color:var(--verde-oscuro);font-size:15px;">Modo edición</strong>
+      <p>Ingresa la contraseña para editar respuestas existentes.</p>
+      <input type="password" id="gatePass" placeholder="Contraseña" onkeydown="if(event.key==='Enter')verificarPassword()">
+      <div id="gateMsg"></div>
+      <button class="btn btn-primary" style="max-width:220px;margin:0 auto;" onclick="verificarPassword()">Acceder</button>
+    </div>
+  </div>
+
+  <!-- ===== VISTA: EDITAR - LISTA ===== -->
+  <div class="card" id="vistaLista" style="display:none;">
+    <div class="field search-box">
+      <label>Buscar registro</label>
+      <input type="text" id="buscador" placeholder="Planta, operador, ruta…" oninput="filtrarLista()">
+    </div>
+    <div id="listaRegistros"><div class="loading">Cargando registros…</div></div>
+  </div>
+
+</div>
+
+<script>
+/* ============ CONFIGURACIÓN ============ */
+const CONFIG = {
+  // Pega aquí la URL /exec del Web App del Sheet de SETTEPI.
+  API_URL: 'https://script.google.com/macros/s/AKfycbz1vtWdf27rL56MRaHr7JgtuRohwVSnvCLCiNtbUzvh7RrwbFsRPFMmcBKgyo-9ilORQA/exec'
+};
+
+const EDIT_PASSWORD_HINT = 'Settepi77'; // solo referencia visual; la verificación real ocurre en el servidor también
+
+const OPCIONES_PLANTA = [
+  'ACCIONA','ALIMENTOS FINOS','APTIV CENTEC 1','APTIV CENTEC 2','APTIV CENTEC 3','AURRENAK','CVG 1','CVG 5','CVG 6','DAIMLER','FEHRER','GANFER SALTILLO','GRIMALDI','HEALTHYLAB','JOHN DEERE RAMOS','JOHN DEERE SALTILLO','MABE SALTILLO','MAGNA CLOUSURES','MAGNA FORMEX','MAGNA POWERTRAIN','MAHLE BR 1','MAHLE BR 2','MAHLE PISTONES','MAPESA','MERCADO LIBRE MONCLOVA','MFG','NEMAK','NOVA STEEL','OIEGSA','SAINT GOBAIN GLASS','SAINT-GOBAIN','TUPY RAMOS','TUPY SALTILLO','TYT','UPRA','UTS','VASCOR','WINDSOR MACHINE MEXICO','WOOBOTECH','YFAI DERRAMADERO','YFAI RAMOS','YFAI STA MARIA','YFAI STA MARIA 2','YFAI TO'
+];
+const OPCIONES_TIPO = ['Conciliacion','Cargo Operador','Cargo Lipu','Falla Mecanica'];
+
+/* ============ ESTADO ============ */
+let modo = 'create';       // 'create' | 'update'
+let filaEditando = null;   // número de fila real en la hoja
+let marcaTemporalOriginal = null;
+let registrosCache = [];
+let autenticado = false;
+let folioActual = '';
+const CAMPO_FOLIO = 'No. de reporte';   // debe coincidir con el encabezado en la hoja
+
+/* ============ INIT ============ */
+function poblarSelect(id, opciones){
+  const sel = document.getElementById(id);
+  opciones.forEach(op=>{
+    const o = document.createElement('option');
+    o.value = op; o.textContent = op;
+    sel.appendChild(o);
+  });
+}
+poblarSelect('f_planta', OPCIONES_PLANTA);
+poblarSelect('f_tipo', OPCIONES_TIPO);
+
+if (!CONFIG.API_URL || CONFIG.API_URL.includes('PEGA_AQUI')){
+  document.getElementById('configWarning').style.display = 'block';
+}
+
+// Vista inicial: contestar
+mostrarVistaFormulario('create');
+
+/* ============ FOLIO / NUMERO DE REPORTE ============ */
+// Respaldo: el folio oficial lo genera el Apps Script (consecutivo RT-000123).
+// Esta función solo se usa si el servidor no devolviera folio.
+function generarFolio(){
+  const d = new Date();
+  const pad = n=>String(n).padStart(2,'0');
+  const fecha = d.getFullYear()+pad(d.getMonth()+1)+pad(d.getDate());
+  const hora  = pad(d.getHours())+pad(d.getMinutes())+pad(d.getSeconds());
+  const rnd   = String(Math.floor(Math.random()*900)+100);
+  return 'RT-'+fecha+'-'+hora+'-'+rnd;
+}
+
+function mostrarFolio(valor, pendiente){
+  folioActual = valor || '';
+  const box = document.getElementById('folioBox');
+  document.getElementById('folioTexto').textContent =
+    folioActual || 'Se asignará al enviar';
+  document.getElementById('folioTexto').style.opacity = folioActual ? '1' : '.55';
+  document.getElementById('btnCopiarFolio').style.display = folioActual ? 'inline-block' : 'none';
+  box.style.display = 'flex';
+  box.style.borderStyle = folioActual ? 'solid' : 'dashed';
+}
+
+function copiarFolio(){
+  if (!folioActual) return;
+  const btn = document.getElementById('btnCopiarFolio');
+  const ok = ()=>{ btn.textContent='¡Copiado!'; setTimeout(()=>btn.textContent='Copiar',1500); };
+  if (navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(folioActual).then(ok).catch(()=>{});
+  } else {
+    const ta=document.createElement('textarea');
+    ta.value=folioActual; document.body.appendChild(ta); ta.select();
+    try{ document.execCommand('copy'); ok(); }catch(e){}
+    document.body.removeChild(ta);
+  }
+}
+
+/* ============ TABS ============ */
+function cambiarTab(tab){
+  document.getElementById('tabContestar').classList.toggle('active', tab==='contestar');
+  document.getElementById('tabEditar').classList.toggle('active', tab==='editar');
+
+  if (tab==='contestar'){
+    document.getElementById('vistaGate').style.display='none';
+    document.getElementById('vistaLista').style.display='none';
+    mostrarVistaFormulario('create');
+  } else {
+    document.getElementById('vistaFormulario').style.display='none';
+    if (autenticado){
+      document.getElementById('vistaGate').style.display='none';
+      document.getElementById('vistaLista').style.display='block';
+      cargarRegistros();
+    } else {
+      document.getElementById('vistaGate').style.display='block';
+      document.getElementById('vistaLista').style.display='none';
+    }
+  }
+}
+
+function mostrarVistaFormulario(m){
+  modo = m;
+  document.getElementById('vistaFormulario').style.display='block';
+  document.getElementById('formTitle').textContent = m==='create' ? 'Nueva solicitud' : 'Editar solicitud';
+  document.getElementById('btnEnviar').textContent = m==='create' ? 'Enviar respuesta' : 'Guardar cambios';
+  document.getElementById('btnVolverLista').style.display = m==='update' ? 'block' : 'none';
+  document.getElementById('msgArea').innerHTML = '';
+  if (m==='create'){
+    document.getElementById('taxiForm').reset();
+    filaEditando = null;
+    marcaTemporalOriginal = null;
+    mostrarFolio('', true);   // el servidor asigna el folio consecutivo al guardar
+  }
+}
+
+function volverALista(){
+  document.getElementById('vistaFormulario').style.display='none';
+  document.getElementById('vistaLista').style.display='block';
+}
+
+/* ============ CANDADO ============ */
+function verificarPassword(){
+  const val = document.getElementById('gatePass').value;
+  const msg = document.getElementById('gateMsg');
+  if (val === EDIT_PASSWORD_HINT){
+    autenticado = true;
+    msg.innerHTML = '';
+    document.getElementById('vistaGate').style.display='none';
+    document.getElementById('vistaLista').style.display='block';
+    cargarRegistros();
+  } else {
+    msg.innerHTML = '<div class="msg msg-err">Contraseña incorrecta</div>';
+  }
+}
+
+/* ============ CARGA DE REGISTROS ============ */
+async function cargarRegistros(){
+  const cont = document.getElementById('listaRegistros');
+  cont.innerHTML = '<div class="loading">Cargando registros…</div>';
+  try{
+    const res = await fetch(CONFIG.API_URL);
+    const data = await res.json();
+    if (!data.ok) throw new Error(data.error || 'Error al cargar');
+    registrosCache = data.rows || [];
+    renderLista(registrosCache);
+  }catch(err){
+    cont.innerHTML = '<div class="msg msg-err">No se pudo conectar con la hoja. Revisa CONFIG.API_URL. ('+err.message+')</div>';
+  }
+}
+
+function renderLista(regs){
+  const cont = document.getElementById('listaRegistros');
+  if (!regs.length){
+    cont.innerHTML = '<div class="empty">Sin registros todavía.</div>';
+    return;
+  }
+  cont.innerHTML = '';
+  regs.slice().reverse().forEach(r=>{
+    const div = document.createElement('div');
+    div.className = 'rec';
+    div.innerHTML = `
+      <div class="rec-info">
+        ${r[CAMPO_FOLIO] ? '<span class="folio">'+escapeHtml(r[CAMPO_FOLIO])+'</span>' : ''}
+        <b>${escapeHtml(r['PLANTA']||'—')}</b> · ${escapeHtml(r['Tipo de solicitud']||'—')}<br>
+        <span class="sub">${escapeHtml(r['Fecha de solicitud']||'—')} · Operador: ${escapeHtml(r['Operador']||'—')} · Ruta: ${escapeHtml(r['Ruta']||'—')}</span>
+      </div>
+      <button class="btn btn-ghost">Editar</button>
+    `;
+    div.querySelector('button').onclick = ()=>cargarParaEditar(r);
+    cont.appendChild(div);
+  });
+}
+
+function filtrarLista(){
+  const q = document.getElementById('buscador').value.toLowerCase();
+  const filtrados = registrosCache.filter(r=>
+    Object.values(r).some(v=>String(v).toLowerCase().includes(q))
+  );
+  renderLista(filtrados);
+}
+
+function cargarParaEditar(r){
+  document.getElementById('f_planta').value = r['PLANTA']||'';
+  document.getElementById('f_tipo').value = r['Tipo de solicitud']||'';
+  document.getElementById('f_motivo').value = r['Motivo de solicitud']||'';
+  document.getElementById('f_locales').value = r['Cantidad de taxis locales']||'';
+  document.getElementById('f_foraneos').value = r['Cantidad de taxis foraneos']||'';
+  document.getElementById('f_ruta').value = r['Ruta']||'';
+  document.getElementById('f_horaInicio').value = normalizarHora(r['Hora de Inicio']);
+  document.getElementById('f_horaLlegada').value = normalizarHora(r['Hora de Llegada']);
+  document.getElementById('f_fecha').value = normalizarFecha(r['Fecha de solicitud']);
+  document.getElementById('f_usuarios').value = r['Usuarios']||'';
+  document.getElementById('f_operador').value = r['Operador']||'';
+  document.getElementById('f_inplant').value = r['Inplant que solicita']||'';
+
+  filaEditando = r._row;
+  marcaTemporalOriginal = r['Marca temporal'];
+  // Conserva el folio original; si el registro es anterior a esta función, se le asigna uno.
+  mostrarFolio(r[CAMPO_FOLIO] || '', !r[CAMPO_FOLIO]);
+
+  document.getElementById('vistaLista').style.display='none';
+  mostrarVistaFormulario('update');
+}
+
+function normalizarHora(v){
+  if(!v) return '';
+  // intenta extraer HH:MM de distintos formatos que puede devolver Sheets
+  const m = String(v).match(/(\d{1,2}):(\d{2})/);
+  return m ? (m[1].padStart(2,'0')+':'+m[2]) : '';
+}
+function normalizarFecha(v){
+  if(!v) return '';
+  const d = new Date(v);
+  if (isNaN(d)) return '';
+  const pad = n=>String(n).padStart(2,'0');
+  return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());
+}
+function escapeHtml(s){
+  return String(s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+/* ============ VALIDACIÓN Y ENVÍO ============ */
+function leerFormulario(){
+  const d = {};
+  d[CAMPO_FOLIO] = folioActual;
+  return Object.assign(d, {
+    'PLANTA': document.getElementById('f_planta').value,
+    'Tipo de solicitud': document.getElementById('f_tipo').value,
+    'Motivo de solicitud': document.getElementById('f_motivo').value.trim(),
+    'Cantidad de taxis locales': document.getElementById('f_locales').value,
+    'Cantidad de taxis foraneos': document.getElementById('f_foraneos').value,
+    'Ruta': document.getElementById('f_ruta').value.trim(),
+    'Hora de Inicio': document.getElementById('f_horaInicio').value,
+    'Hora de Llegada': document.getElementById('f_horaLlegada').value,
+    'Fecha de solicitud': document.getElementById('f_fecha').value,
+    'Usuarios': document.getElementById('f_usuarios').value.trim(),
+    'Operador': document.getElementById('f_operador').value.trim(),
+    'Inplant que solicita': document.getElementById('f_inplant').value.trim()
+  });
+}
+
+function validar(data){
+  const requeridos = ['PLANTA','Tipo de solicitud','Motivo de solicitud','Ruta','Hora de Inicio','Hora de Llegada','Fecha de solicitud','Operador','Inplant que solicita'];
+  return requeridos.every(k => String(data[k]||'').trim() !== '');
+}
+
+async function enviarFormulario(){
+  const msgArea = document.getElementById('msgArea');
+  msgArea.innerHTML = '';
+
+  if (!CONFIG.API_URL || CONFIG.API_URL.includes('PEGA_AQUI')){
+    msgArea.innerHTML = '<div class="msg msg-err">Falta configurar la URL del Web App (CONFIG.API_URL).</div>';
+    return;
+  }
+
+  const data = leerFormulario();
+  if (!validar(data)){
+    msgArea.innerHTML = '<div class="msg msg-err">Completa todos los campos obligatorios (*).</div>';
+    return;
+  }
+
+  const btn = document.getElementById('btnEnviar');
+  btn.disabled = true;
+  btn.textContent = 'Enviando…';
+
+  const payload = modo === 'create'
+    ? { action:'create', data }
+    : { action:'update', row:filaEditando, password:EDIT_PASSWORD_HINT, data:Object.assign({'Marca temporal':marcaTemporalOriginal}, data) };
+
+  try{
+    const res = await fetch(CONFIG.API_URL, {
+      method:'POST',
+      headers:{'Content-Type':'text/plain;charset=utf-8'}, // evita preflight CORS con Apps Script
+      body: JSON.stringify(payload)
+    });
+    const result = await res.json();
+    if (!result.ok) throw new Error(result.error || 'Error al guardar');
+
+    const folioGuardado = (result.folio || data[CAMPO_FOLIO]);   // si el servidor devuelve folio, gana el del servidor
+    mostrarFolio(folioGuardado, false);
+    data[CAMPO_FOLIO] = folioGuardado;
+
+    msgArea.innerHTML = '<div class="msg msg-ok">'
+      + (modo==='create' ? 'Respuesta enviada correctamente.' : 'Cambios guardados correctamente.')
+      + '<br>No. de reporte: <b>'+escapeHtml(folioGuardado)+'</b></div>';
+    generarImagenComprobante(data);
+
+    if (modo === 'create'){
+      document.getElementById('taxiForm').reset();
+      mostrarFolio('', true);   // listo para la siguiente captura
+    }
+  }catch(err){
+    msgArea.innerHTML = '<div class="msg msg-err">No se pudo guardar: '+err.message+'</div>';
+  }finally{
+    btn.disabled = false;
+    btn.textContent = modo==='create' ? 'Enviar respuesta' : 'Guardar cambios';
+  }
+}
+
+/* ============ IMAGEN DE COMPROBANTE ============ */
+function wrapText(ctx, text, maxWidth){
+  const words = String(text||'-').split(' ');
+  const lines = [];
+  let current = '';
+  words.forEach(w=>{
+    const test = current ? current+' '+w : w;
+    if (ctx.measureText(test).width > maxWidth && current){
+      lines.push(current);
+      current = w;
+    } else {
+      current = test;
+    }
+  });
+  if (current) lines.push(current);
+  return lines;
+}
+
+function generarImagenComprobante(data){
+  const etiquetas = [
+    [CAMPO_FOLIO,'No. de reporte'],
+    ['PLANTA','PLANTA'],
+    ['Tipo de solicitud','Tipo de solicitud'],
+    ['Motivo de solicitud','Motivo de solicitud'],
+    ['Cantidad de taxis locales','Taxis locales'],
+    ['Cantidad de taxis foraneos','Taxis foráneos'],
+    ['Ruta','Ruta'],
+    ['Hora de Inicio','Hora de inicio'],
+    ['Hora de Llegada','Hora de llegada'],
+    ['Fecha de solicitud','Fecha de solicitud'],
+    ['Usuarios','Usuarios'],
+    ['Operador','Operador'],
+    ['Inplant que solicita','Inplant que solicita']
+  ];
+
+  const width = 720;
+  const marginX = 28;
+  const labelW = 220;
+  const valueW = width - marginX*2 - labelW - 10;
+  const headerH = 118;
+  const rowPadV = 14;
+  const lineH = 18;
+
+  // canvas temporal para medir texto envuelto
+  const measureCanvas = document.createElement('canvas');
+  const mctx = measureCanvas.getContext('2d');
+  mctx.font = '13px Arial';
+
+  const rows = etiquetas.map(([key,label])=>{
+    const value = data[key] !== undefined && data[key] !== '' ? String(data[key]) : '-';
+    const lines = wrapText(mctx, value, valueW);
+    return { label, lines: lines.length ? lines : ['-'] };
+  });
+
+  const rowHeights = rows.map(r => Math.max(lineH, r.lines.length*lineH) + rowPadV);
+  const totalRowsH = rowHeights.reduce((a,b)=>a+b,0);
+  const footerH = 34;
+  const height = headerH + totalRowsH + footerH;
+
+  const canvas = document.createElement('canvas');
+  canvas.width = width;
+  canvas.height = height;
+  const ctx = canvas.getContext('2d');
+
+  // fondo
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(0,0,width,height);
+
+  // header
+  const grad = ctx.createLinearGradient(0,0,width,0);
+  grad.addColorStop(0,'#1F6FD0');
+  grad.addColorStop(1,'#123E7C');
+  ctx.fillStyle = grad;
+  ctx.fillRect(0,0,width,headerH);
+
+  ctx.fillStyle = '#ffffff';
+  ctx.font = 'bold 22px Arial';
+  ctx.fillText('SETTEPI', marginX, 42);
+  ctx.font = '15px Arial';
+  ctx.fillText('Comprobante · Registro de Taxis', marginX, 66);
+  ctx.font = '12.5px Arial';
+  ctx.fillStyle = 'rgba(255,255,255,0.85)';
+  const fechaHora = new Date().toLocaleString('es-MX',{dateStyle:'medium',timeStyle:'short'});
+  ctx.fillText('Generado: '+fechaHora, marginX, 90);
+
+  // Folio destacado a la derecha del header
+  const folioTxt = String(data[CAMPO_FOLIO]||'');
+  if (folioTxt){
+    ctx.textAlign = 'right';
+    ctx.font = '11.5px Arial';
+    ctx.fillStyle = 'rgba(255,255,255,0.85)';
+    ctx.fillText('NO. DE REPORTE', width-marginX, 44);
+    ctx.font = 'bold 18px Arial';
+    ctx.fillStyle = '#ffffff';
+    ctx.fillText(folioTxt, width-marginX, 68);
+    ctx.textAlign = 'left';
+  }
+
+  // filas
+  let y = headerH;
+  rows.forEach((r, i)=>{
+    const h = rowHeights[i];
+    if (i % 2 === 0){
+      ctx.fillStyle = '#F5F8FD';
+      ctx.fillRect(0, y, width, h);
+    }
+    const textY = y + rowPadV/2 + lineH*0.72;
+
+    ctx.fillStyle = '#123E7C';
+    ctx.font = 'bold 13px Arial';
+    ctx.fillText(r.label, marginX, textY);
+
+    ctx.fillStyle = '#333333';
+    ctx.font = '13px Arial';
+    r.lines.forEach((line, li)=>{
+      ctx.fillText(line, marginX + labelW, textY + li*lineH);
+    });
+
+    y += h;
+  });
+
+  // footer accent
+  ctx.fillStyle = '#F2A03D';
+  ctx.fillRect(0, height-6, width, 6);
+
+  // descarga
+  const link = document.createElement('a');
+  const stamp = new Date().toISOString().replace(/[:.]/g,'-');
+  const folioArchivo = String(data[CAMPO_FOLIO]||'').replace(/[^A-Za-z0-9\-]/g,'');
+  link.download = folioArchivo ? (folioArchivo+'.png') : ('registro_taxi_settepi_'+stamp+'.png');
+  link.href = canvas.toDataURL('image/png');
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+}
+</script>
+</body>
+</html>
