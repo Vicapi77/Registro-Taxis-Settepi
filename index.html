@@ -199,6 +199,13 @@
       </div>
 
       <div class="field">
+        <label>Proveedor <span class="req">*</span></label>
+        <select id="f_proveedor" required>
+          <option value="">Selecciona…</option>
+        </select>
+      </div>
+
+      <div class="field">
         <label>Ruta <span class="req">*</span></label>
         <input type="text" id="f_ruta" required>
       </div>
@@ -266,15 +273,19 @@
 /* ============ CONFIGURACIÓN ============ */
 const CONFIG = {
   // Pega aquí la URL /exec del Web App del Sheet de SETTEPI.
-  API_URL: 'https://script.google.com/macros/s/AKfycbz1vtWdf27rL56MRaHr7JgtuRohwVSnvCLCiNtbUzvh7RrwbFsRPFMmcBKgyo-9ilORQA/exec'
+  API_URL: '/* PEGA_AQUI */'
 };
 
 const EDIT_PASSWORD_HINT = 'Settepi77'; // solo referencia visual; la verificación real ocurre en el servidor también
 
 const OPCIONES_PLANTA = [
-  'ACCIONA','ALIMENTOS FINOS','APTIV CENTEC 1','APTIV CENTEC 2','APTIV CENTEC 3','AURRENAK','CVG 1','CVG 5','CVG 6','DAIMLER','FEHRER','GANFER SALTILLO','GRIMALDI','HEALTHYLAB','JOHN DEERE RAMOS','JOHN DEERE SALTILLO','MABE SALTILLO','MAGNA CLOUSURES','MAGNA FORMEX','MAGNA POWERTRAIN','MAHLE BR 1','MAHLE BR 2','MAHLE PISTONES','MAPESA','MERCADO LIBRE MONCLOVA','MFG','NEMAK','NOVA STEEL','OIEGSA','SAINT GOBAIN GLASS','SAINT-GOBAIN','TUPY RAMOS','TUPY SALTILLO','TYT','UPRA','UTS','VASCOR','WINDSOR MACHINE MEXICO','WOOBOTECH','YFAI DERRAMADERO','YFAI RAMOS','YFAI STA MARIA','YFAI STA MARIA 2','YFAI TO'
+  'CAMIONES','MOTORES NORTE','EXTENSION','VAN','MOTORES SUR','ISRINGHAUSEN',
+  'BORGWARNER RAMOS','SABRITAS SALTILLO','METALSA','DEACERO PLANTA SALTILLO',
+  'ALPHABET','HOLCIM','CINSA','BOCAR','DRAXTON SALTILLO','MIXING','SANTA ANITA',
+  'HI-LEX','OMNISOURCE','MONTE BLANCO','FHERER','LAZ BOY'
 ];
-const OPCIONES_TIPO = ['Conciliacion','Cargo Operador','Cargo Settepi','Siniestro','Falla Mecanica'];
+const OPCIONES_TIPO = ['Conciliacion','Cargo Operador','Cargo Lipu','Falla Mecanica'];
+const OPCIONES_PROVEEDOR = ['5 de Mayo','Eva Martínez','Luis Erasmo'];
 
 /* ============ ESTADO ============ */
 let modo = 'create';       // 'create' | 'update'
@@ -296,6 +307,7 @@ function poblarSelect(id, opciones){
 }
 poblarSelect('f_planta', OPCIONES_PLANTA);
 poblarSelect('f_tipo', OPCIONES_TIPO);
+poblarSelect('f_proveedor', OPCIONES_PROVEEDOR);
 
 if (!CONFIG.API_URL || CONFIG.API_URL.includes('PEGA_AQUI')){
   document.getElementById('configWarning').style.display = 'block';
@@ -450,6 +462,7 @@ function cargarParaEditar(r){
   document.getElementById('f_motivo').value = r['Motivo de solicitud']||'';
   document.getElementById('f_locales').value = r['Cantidad de taxis locales']||'';
   document.getElementById('f_foraneos').value = r['Cantidad de taxis foraneos']||'';
+  document.getElementById('f_proveedor').value = r['Proveedor']||'';
   document.getElementById('f_ruta').value = r['Ruta']||'';
   document.getElementById('f_horaInicio').value = normalizarHora(r['Hora de Inicio']);
   document.getElementById('f_horaLlegada').value = normalizarHora(r['Hora de Llegada']);
@@ -494,6 +507,7 @@ function leerFormulario(){
     'Motivo de solicitud': document.getElementById('f_motivo').value.trim(),
     'Cantidad de taxis locales': document.getElementById('f_locales').value,
     'Cantidad de taxis foraneos': document.getElementById('f_foraneos').value,
+    'Proveedor': document.getElementById('f_proveedor').value,
     'Ruta': document.getElementById('f_ruta').value.trim(),
     'Hora de Inicio': document.getElementById('f_horaInicio').value,
     'Hora de Llegada': document.getElementById('f_horaLlegada').value,
@@ -505,7 +519,7 @@ function leerFormulario(){
 }
 
 function validar(data){
-  const requeridos = ['PLANTA','Tipo de solicitud','Motivo de solicitud','Ruta','Hora de Inicio','Hora de Llegada','Fecha de solicitud','Operador','Inplant que solicita'];
+  const requeridos = ['PLANTA','Tipo de solicitud','Motivo de solicitud','Proveedor','Ruta','Hora de Inicio','Hora de Llegada','Fecha de solicitud','Operador','Inplant que solicita'];
   return requeridos.every(k => String(data[k]||'').trim() !== '');
 }
 
@@ -588,6 +602,7 @@ function generarImagenComprobante(data){
     ['Motivo de solicitud','Motivo de solicitud'],
     ['Cantidad de taxis locales','Taxis locales'],
     ['Cantidad de taxis foraneos','Taxis foráneos'],
+    ['Proveedor','Proveedor'],
     ['Ruta','Ruta'],
     ['Hora de Inicio','Hora de inicio'],
     ['Hora de Llegada','Hora de llegada'],
